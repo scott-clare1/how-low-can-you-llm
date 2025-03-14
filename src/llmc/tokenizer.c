@@ -7,15 +7,18 @@ Which could be tricky in C because of the regex involved, to look into later.
 */
 
 // #include <cstring>
-#include <_types/_uint32_t.h>
-#include <malloc/_malloc.h>
+#include <sys/types.h>
+#include <stdlib.h>
 #include <stdint.h>
 #include <ctype.h>
 #include <assert.h>
 // our own utilities
 // defines fopenCheck, freadCheck, fcloseCheck, fseekCheck, mallocCheck
-#include "utils.h"
+
 #include "tokenizer.h"
+
+#include "utils.h"
+
 
 // ----------------------------------------------------------------------------
 
@@ -42,8 +45,6 @@ void tokenizer_init(Tokenizer *tokenizer, const char *filename) {
         // try to be more helpful as we just added this feature, erase later
         printf("---\n");
         printf("WARNING: Failed to open the tokenizer file %s\n", filename);
-        printf("The Tokenizer is a new feature added April 14 2024.\n");
-        printf("Re-run `python train_gpt2.py` to write it\n");
         printf("---\n");
         tokenizer->init_ok = 0;
         return;
@@ -81,7 +82,7 @@ void tokenizer_init(Tokenizer *tokenizer, const char *filename) {
     tokenizer->init_ok = 1;
 }
 
-const char *tokenizer_decode(Tokenizer *tokenizer, uint32_t token_id) {
+char* tokenizer_decode(Tokenizer *tokenizer, uint32_t token_id) {
     if (tokenizer->init_ok == 0) {
         return NULL;
     }
@@ -91,74 +92,6 @@ const char *tokenizer_decode(Tokenizer *tokenizer, uint32_t token_id) {
         printf("invalid token id %u!\n", token_id);
         return NULL;
     }
-}
-
-int contains_next_substring(
-    char* next,
-    Tokenizer* tokenizer
-) {
-    for (int j = 0; j < tokenizer->vocab_size; j++) {
-        if (strcmp(next, tokenizer->token_table[j]) == 0) {
-            return 1;
-        }
-    }
-    return 0;
-}
-
-
-int get_string_size(char* input) {
-    char * t; // first copy the pointer to not change the original
-    int size = 0;
-
-    for (t = input; *t != '\0'; t++) {
-        size++;
-    }
-    return size;
-}
-
-
-EncodedInput tokenizer_encode(Tokenizer *tokenizer, char* input) {
-    int size = get_string_size(input);
-
-    uint32_t* tokens = (uint32_t*)malloc(size * sizeof(uint32_t));
-
-    char* substring = (char*)malloc(size * sizeof(char));
-    char* next = (char*)malloc(size * sizeof(char));
-    int counter = 0;
-    int token_count = 0;
-    next[counter] = input[0];
-    for (int c = 0; c < size; c++) {
-        substring[counter] = input[c];
-
-        next[counter+1] = input[c+1];
-        counter++;
-
-        for (int i = 0; i < tokenizer->vocab_size; i++) {
-            if (strcmp(substring, tokenizer->token_table[i]) == 0) {
-                if (contains_next_substring(next, tokenizer) == 0 || counter == size) {
-                    printf("Substring: %s\n", substring);
-                    printf("Next: %s\n", next);
-                    tokens[token_count] = i;
-                    printf("Assigned token: %d\n", i);
-                    counter = 0;
-                    token_count++;
-
-                    memset(substring, '\0', sizeof(&substring));
-                    memset(next, '\0', sizeof(&substring));
-                    next[counter] = input[c+1];
-                };
-            }
-        }
-    }
-
-    free(substring);
-
-    EncodedInput encoded_input;
-
-    encoded_input.input_tokens = tokens;
-    encoded_input.num_input_tokens = token_count;
-
-    return encoded_input;
 }
 
 

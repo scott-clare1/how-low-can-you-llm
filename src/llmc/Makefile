@@ -106,49 +106,6 @@ else
   endif
 endif
 
-# Check and include cudnn if available
-# You can override the path to cudnn frontend by setting CUDNN_FRONTEND_PATH on the make command line
-# By default, we look for it in HOME/cudnn-frontend/include and ./cudnn-frontend/include
-# Refer to the README for cuDNN install instructions
-ifeq ($(USE_CUDNN), 1)
-  ifeq ($(SHELL_UNAME), Linux)
-    ifeq ($(shell [ -d $(HOME)/cudnn-frontend/include ] && echo "exists"), exists)
-      $(info ✓ cuDNN found, will run with flash-attention)
-      CUDNN_FRONTEND_PATH ?= $(HOME)/cudnn-frontend/include
-    else ifeq ($(shell [ -d cudnn-frontend/include ] && echo "exists"), exists)
-      $(info ✓ cuDNN found, will run with flash-attention)
-      CUDNN_FRONTEND_PATH ?= cudnn-frontend/include
-    else
-      $(error ✗ cuDNN not found. See the README for install instructions and the Makefile for hard-coded paths)
-    endif
-    NVCC_INCLUDES += -I$(CUDNN_FRONTEND_PATH)
-    NVCC_LDFLAGS += -lcudnn
-    NVCC_FLAGS += -DENABLE_CUDNN
-    NVCC_CUDNN = $(BUILD_DIR)/cudnn_att.o
-  else
-    ifneq ($(OS), Windows_NT)
-      $(info → cuDNN is not supported on MAC OS right now)
-    else
-      $(info ✓ Windows cuDNN found, will run with flash-attention)
-      ifeq ($(shell if exist "$(HOMEDRIVE)$(HOMEPATH)\cudnn-frontend\include" (echo exists)),exists)
-        CUDNN_FRONTEND_PATH ?= $(HOMEDRIVE)$(HOMEPATH)\cudnn-frontend\include #override on command line if different location
-      else ifeq ($(shell if exist "cudnn-frontend\include" (echo exists)),exists)
-        CUDNN_FRONTEND_PATH ?= cudnn-frontend\include #override on command line if different location
-      else
-        $(error ✗ cuDNN not found. See the README for install instructions and the Makefile for hard-coded paths)
-      endif
-      CUDNN_INCLUDE_PATH ?= -I"C:\Program Files\NVIDIA\CUDNN\v9.1\include\12.4"
-      CUDNN_FRONTEND_PATH += $(CUDNN_INCLUDE_PATH)
-      NVCC_FLAGS += --std c++20 -Xcompiler "/std:c++20" -Xcompiler "/EHsc /W0 /nologo /Ox /FS" -maxrregcount=0 --machine 64
-      NVCC_CUDNN = $(BUILD_DIR)\cudnn_att.obj
-      NVCC_INCLUDES += -I$(CUDNN_FRONTEND_PATH)
-      NVCC_LDFLAGS += -L"C:\Program Files\NVIDIA\CUDNN\v9.1\lib\12.4\x64" -lcudnn
-      NVCC_FLAGS += -DENABLE_CUDNN
-    endif
-  endif
-else
-  $(info → cuDNN is manually disabled by default, run make with `USE_CUDNN=1` to try to enable)
-endif
 
 # Check if OpenMP is available
 # This is done by attempting to compile an empty file with OpenMP flags
@@ -194,40 +151,6 @@ else
   endif
 endif
 
-# Check if NCCL is available, include if so, for multi-GPU training
-ifeq ($(NO_MULTI_GPU), 1)
-  $(info → Multi-GPU (NCCL) is manually disabled)
-else
-  ifneq ($(OS), Windows_NT)
-    # Detect if running on macOS or Linux
-    ifeq ($(SHELL_UNAME), Darwin)
-      $(info ✗ Multi-GPU on CUDA on Darwin is not supported, skipping NCCL support)
-    else ifeq ($(shell dpkg -l | grep -q nccl && echo "exists"), exists)
-      $(info ✓ NCCL found, OK to train with multiple GPUs)
-      NVCC_FLAGS += -DMULTI_GPU
-      NVCC_LDLIBS += -lnccl
-    else
-      $(info ✗ NCCL is not found, disabling multi-GPU support)
-      $(info ---> On Linux you can try install NCCL with `sudo apt install libnccl2 libnccl-dev`)
-    endif
-  endif
-endif
-
-# Attempt to find and include OpenMPI on the system
-OPENMPI_DIR ?= /usr/lib/x86_64-linux-gnu/openmpi
-OPENMPI_LIB_PATH = $(OPENMPI_DIR)/lib/
-OPENMPI_INCLUDE_PATH = $(OPENMPI_DIR)/include/
-ifeq ($(NO_USE_MPI), 1)
-  $(info → MPI is manually disabled)
-else ifeq ($(shell [ -d $(OPENMPI_LIB_PATH) ] && [ -d $(OPENMPI_INCLUDE_PATH) ] && echo "exists"), exists)
-  $(info ✓ MPI enabled)
-  NVCC_INCLUDES += -I$(OPENMPI_INCLUDE_PATH)
-  NVCC_LDFLAGS += -L$(OPENMPI_LIB_PATH)
-  NVCC_LDLIBS += -lmpi
-  NVCC_FLAGS += -DUSE_MPI
-else
-  $(info ✗ MPI not found)
-endif
 
 # Precision settings, default to bf16 but ability to override
 PRECISION ?= BF16
@@ -244,14 +167,14 @@ else
 endif
 
 # PHONY means these targets will always be executed
-.PHONY: inference
+.PHONY: server
 
 $(info ---------------------------------------------)
 
-SRC = inference.c tokenizer.c dataloader.c utils.c rand.c
-EXEC = inference
+SRC = server.c inference.c tokenizer.c dataloader.c rand.c
+EXEC = server
 
-inference: $(SRC)
+server: $(SRC)
 	$(CC) $(CFLAGS) $(INCLUDES) $(LDFLAGS) $^ $(LDLIBS) -o $(EXEC) -g
 
 clean:

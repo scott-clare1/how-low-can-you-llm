@@ -9,7 +9,7 @@ Which could be tricky in C because of the regex involved, to look into later.
 #ifndef TOKENIZER
 #define TOKENIZER
 
-#include <_types/_uint32_t.h>
+#include <sys/types.h>
 #include <stdint.h>
 #include <ctype.h>
 #include <assert.h>
@@ -36,7 +36,7 @@ void safe_printf(const char *piece);
 
 void tokenizer_init(Tokenizer *tokenizer, const char *filename);
 
-const char *tokenizer_decode(Tokenizer *tokenizer, uint32_t token_id);
+char *tokenizer_decode(Tokenizer *tokenizer, uint32_t token_id);
 
 void tokenizer_free(Tokenizer *tokenizer);
 

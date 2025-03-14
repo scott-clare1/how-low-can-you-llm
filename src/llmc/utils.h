@@ -16,7 +16,6 @@
 #ifndef _WIN32
 #include <dirent.h>
 #include <arpa/inet.h>
-#endif
 
 // ----------------------------------------------------------------------------
 // fread convenience utils, with nice handling of error checking using macros
@@ -26,7 +25,6 @@
 extern inline FILE *fopen_check(const char *path, const char *mode, const char *file, int line);
 
 #define fopenCheck(path, mode) fopen_check(path, mode, __FILE__, __LINE__)
-
 extern inline void fread_check(void *ptr, size_t size, size_t nmemb, FILE *stream, const char *file, int line);
 
 #define freadCheck(ptr, size, nmemb, stream) fread_check(ptr, size, nmemb, stream, __FILE__, __LINE__)
@@ -34,6 +32,13 @@ extern inline void fread_check(void *ptr, size_t size, size_t nmemb, FILE *strea
 extern inline void fclose_check(FILE *fp, const char *file, int line);
 
 #define fcloseCheck(fp) fclose_check(fp, __FILE__, __LINE__)
+
+// ----------------------------------------------------------------------------
+// malloc error-handling wrapper util
+
+extern inline void *malloc_check(size_t size, const char *file, int line);
+
+#define mallocCheck(size) malloc_check(size, __FILE__, __LINE__)
 
 extern inline void sclose_check(int sockfd, const char *file, int line);
 
@@ -53,18 +58,10 @@ extern inline void fwrite_check(void *ptr, size_t size, size_t nmemb, FILE *stre
 
 #define fwriteCheck(ptr, size, nmemb, stream) fwrite_check(ptr, size, nmemb, stream, __FILE__, __LINE__)
 
-// ----------------------------------------------------------------------------
-// malloc error-handling wrapper util
-
-extern inline void *malloc_check(size_t size, const char *file, int line);
-
-#define mallocCheck(size) malloc_check(size, __FILE__, __LINE__)
-
 
 // ----------------------------------------------------------------------------
 // check that all tokens are within range
 extern inline void token_check(const int* tokens, int token_count, int vocab_size, const char *file, int line);
-
 #define tokenCheck(tokens, count, vocab) token_check(tokens, count, vocab, __FILE__, __LINE__)
 
 // ----------------------------------------------------------------------------
@@ -75,5 +72,8 @@ extern inline void create_dir_if_not_exists(const char *dir);
 extern inline int find_max_step(const char* output_log_dir);
 
 extern inline int ends_with_bin(const char* str);
+
+
+#endif
 
 #endif

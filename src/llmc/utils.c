@@ -4,6 +4,7 @@
  C standard library function and check its return code. If an error was reported,
  the program prints some debug information and exits.
 */
+
 #include <unistd.h>
 #include <string.h>
 #include <stdio.h>
@@ -13,9 +14,6 @@
 #ifndef _WIN32
 #include <dirent.h>
 #include <arpa/inet.h>
-#endif
-
-#include "utils.h"
 
 // ----------------------------------------------------------------------------
 // fread convenience utils, with nice handling of error checking using macros
@@ -39,7 +37,6 @@ extern inline FILE *fopen_check(const char *path, const char *mode, const char *
 }
 
 #define fopenCheck(path, mode) fopen_check(path, mode, __FILE__, __LINE__)
-
 extern inline void fread_check(void *ptr, size_t size, size_t nmemb, FILE *stream, const char *file, int line) {
     size_t result = fread(ptr, size, nmemb, stream);
     if (result != nmemb) {
@@ -73,6 +70,24 @@ extern inline void fclose_check(FILE *fp, const char *file, int line) {
 }
 
 #define fcloseCheck(fp) fclose_check(fp, __FILE__, __LINE__)
+
+// ----------------------------------------------------------------------------
+// malloc error-handling wrapper util
+
+extern inline void *malloc_check(size_t size, const char *file, int line) {
+    void *ptr = malloc(size);
+    if (ptr == NULL) {
+        fprintf(stderr, "Error: Memory allocation failed at %s:%d\n", file, line);
+        fprintf(stderr, "Error details:\n");
+        fprintf(stderr, "  File: %s\n", file);
+        fprintf(stderr, "  Line: %d\n", line);
+        fprintf(stderr, "  Size: %zu bytes\n", size);
+        exit(EXIT_FAILURE);
+    }
+    return ptr;
+}
+
+#define mallocCheck(size) malloc_check(size, __FILE__, __LINE__)
 
 extern inline void sclose_check(int sockfd, const char *file, int line) {
     if (close(sockfd) != 0) {
@@ -135,24 +150,6 @@ extern inline void fwrite_check(void *ptr, size_t size, size_t nmemb, FILE *stre
 }
 
 #define fwriteCheck(ptr, size, nmemb, stream) fwrite_check(ptr, size, nmemb, stream, __FILE__, __LINE__)
-
-// ----------------------------------------------------------------------------
-// malloc error-handling wrapper util
-
-extern inline void *malloc_check(size_t size, const char *file, int line) {
-    void *ptr = malloc(size);
-    if (ptr == NULL) {
-        fprintf(stderr, "Error: Memory allocation failed at %s:%d\n", file, line);
-        fprintf(stderr, "Error details:\n");
-        fprintf(stderr, "  File: %s\n", file);
-        fprintf(stderr, "  Line: %d\n", line);
-        fprintf(stderr, "  Size: %zu bytes\n", size);
-        exit(EXIT_FAILURE);
-    }
-    return ptr;
-}
-
-#define mallocCheck(size) malloc_check(size, __FILE__, __LINE__)
 
 
 // ----------------------------------------------------------------------------
@@ -218,3 +215,6 @@ extern inline int ends_with_bin(const char* str) {
     int suffix_matches = strncmp(str + len - suffix_len, suffix, suffix_len) == 0;
     return suffix_matches;
 }
+
+
+#endif
