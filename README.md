@@ -44,10 +44,10 @@ curl http://0.0.0.0:8080/
 
 ## Future Work
 
-- [] Deploy services in AWS using IaC.
-- [] Documentation for GPT-2 Architecture.
-- [] Train on Tiny Shakespeare dataset.
-- [] Model Registry.
+- [ ] Deploy services in AWS using IaC.
+- [ ] Documentation for GPT-2 Architecture.
+- [ ] Train on Tiny Shakespeare dataset.
+- [ ] Model Registry.
 
 > [!NOTE]
 > This project has cannabalised Andrej Karpathy's [`llm.c`](https://github.com/karpathy/llm.c) project. I've just tried to optimise it as best as possible for inference over training. Take a look at his [implementation](https://github.com/karpathy/llm.c/blob/master/train_gpt2.c).
