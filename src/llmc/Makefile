@@ -171,7 +171,7 @@ endif
 
 $(info ---------------------------------------------)
 
-SRC = server.c inference.c tokenizer.c dataloader.c rand.c
+SRC = server.c inference.c tokenizer.c rand.c
 EXEC = server
 
 server: $(SRC)

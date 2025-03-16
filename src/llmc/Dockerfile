@@ -8,7 +8,7 @@ RUN apt-get update && apt-get install -y libgomp1
 WORKDIR /app
 # copy all files from current directory inside the build-env container
 COPY . .
-# Compile the source code and generate hello binary executable file
+# Compile the source code
 RUN make server
 # use another container to run the program
 FROM ubuntu

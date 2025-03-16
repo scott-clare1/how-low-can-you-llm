@@ -1,10 +1,10 @@
-#include "dataloader.h"
 #include "tokenizer.h"
 #include <sys/types.h>
 #include <stddef.h>
 #include <stdio.h>
 #include "inference.h"
 #include "utils.c"
+#include <math.h>
 
 #include <stddef.h>
 #include <stdint.h>

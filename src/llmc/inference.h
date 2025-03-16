@@ -1,7 +1,6 @@
 #ifndef INFERENCE
 #define INFERENCE
 
-#include "dataloader.h"
 #include "tokenizer.h"
 #include <sys/types.h>
 #include <stddef.h>
