@@ -4,7 +4,7 @@ provider "aws" {
 
 
 resource "aws_ecr_repository" "how-low-can-you-llm-ecr" {
-  name = "bar"
+  name = var.ecr_name
 
   image_scanning_configuration {
     scan_on_push = true
