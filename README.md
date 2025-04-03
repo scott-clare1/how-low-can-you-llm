@@ -11,14 +11,16 @@ Thoughts for deploying to AWS with free-tier:
 
 My thoughts are that this should be enough to deploy our server?
 
-## Download Model and Tokenizer
+## Running Locally
+
+### Download Model and Tokenizer
 
 ```
 cd src/llmc \
 ./download_starter_pack.sh
 ```
 
-## Build Server
+### Build Server
 
 ```
 cd src/llmc
@@ -42,9 +44,32 @@ Make Request:
 curl http://0.0.0.0:8080/
 ```
 
+## Deploying Infra
+
+All infra can be deployed through terraform.
+
+To deploy:
+
+1. Move into the `infra` directory.
+
+```bash
+cd infra
+```
+
+2. Apply configurations
+
+```bash
+terraform apply
+```
+
+This will deploy the following architecture:
+
+![how-low-can-you-llm-infra](imgs/how-low-can-you-llm-infra.png)
+
 ## Future Work
 
 - [ ] Deploy services in AWS using IaC.
+- [ ] Add workflow for deploying image to ECR.
 - [ ] Documentation for GPT-2 Architecture.
 - [ ] Train on Tiny Shakespeare dataset.
 - [ ] Model Registry.
